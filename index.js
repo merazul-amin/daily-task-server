@@ -14,7 +14,6 @@ app.use(express.json());
 
 
 const uri = `mongodb+srv://${process.env.db_user}:${process.env.db_password}@cluster0.jnuj2ye.mongodb.net/?retryWrites=true&w=majority`;
-console.log(uri);
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
@@ -44,6 +43,27 @@ async function run() {
         const query = { _id: ObjectId(id) };
         const result = await userTasks.deleteOne(query);
         res.send(result);
+    })
+
+    //complete task api
+    app.patch('/userTasks/:id', async (req, res) => {
+        const id = req.params.id;
+        const filter = { _id: ObjectId(id) };
+        const doc = {
+            $set: {
+                isComplete: true
+            }
+        }
+        const result = await userTasks.updateOne(filter, doc);
+        res.send(result);
+    })
+
+    //get completed tasks
+    app.get('/completed/:email', async (req, res) => {
+        const email = req.params.email;
+        const query = { userEmail: email };
+        const tasks = await userTasks.find(query).toArray();
+        res.send(tasks);
     })
 
 }
